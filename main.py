@@ -2,9 +2,13 @@
 """
 
 import sys
+import window
 
-def main():
-    pass
+
+def main() -> None:
+    win_root = window.Window()
+    win_root.activate()
+
 
 if __name__ == "__main__":
     sys.exit(main())
