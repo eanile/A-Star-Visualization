@@ -40,6 +40,9 @@ class Window:
             self.canvas.create_line([0, y], [width, y])
         self.canvas.pack()
 
+        button = tk.Button(self.root, text="Start A*", height=2, width=10)
+        button.pack(side=tk.LEFT)
+
         # Left mouse button should create an obstacle, right mouse button
         # should erase an obstacle.
         self.canvas.bind('<B1-Motion>', self.__draw_obstacle)
