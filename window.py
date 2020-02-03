@@ -54,7 +54,7 @@ class Window:
         """ Draw an obstacle (in the form of a filled in square) on the screen.
 
         Args:
-            event {tkinder.Event}: details from the triggered event
+            event {tkinter.Event}: details from the triggered event
 
         Returns:
             None
@@ -77,7 +77,7 @@ class Window:
         """ Erase an obstacle (in the form of a filled in square) on the screen.
 
         Args:
-            event {tkinder.Event}: details from the triggered event
+            event {tkinter.Event}: details from the triggered event
 
         Returns:
             None
