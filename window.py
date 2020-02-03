@@ -1,5 +1,7 @@
 import tkinter as tk
 
+from typing import Tuple
+
 
 class Window:
     """ This class defines all window-related behaviour, including updating the
@@ -10,8 +12,9 @@ class Window:
         width {int}: width of new window grid.
         height {int}: height of new window grid.
     """
-    box_width = 25
-    box_height = 25
+    box_width = 25   # Width of a box in the grid.
+    box_height = 25  # Height of a box in the grid.
+    obstacles = {}   # Dictionary of tkinter id to box coordinates.
 
     def __init__(self, width: int = 500, height: int = 500) -> None:
         """ Initialize the window, including drawing the grid and registering
@@ -37,10 +40,47 @@ class Window:
             self.canvas.create_line([0, y], [width, y])
         self.canvas.pack()
 
-        # Left mouse button should create an obstacle, right mouse button.
+        # Left mouse button should create an obstacle, right mouse button
         # should erase an obstacle.
+        self.canvas.bind('<B1-Motion>', self._draw_obstacle)
         self.canvas.bind('<Button-1>', self._draw_obstacle)
+        self.canvas.bind('<B3-Motion>', self._erase_obstacle)
         self.canvas.bind('<Button-3>', self._erase_obstacle)
+
+    def _box_to_corner_coords(self, x: int, y: int) -> Tuple[Tuple, Tuple]:
+        """ Converts a box's coordinates to the coordinates of it's top left
+        and bottom right corners on the canvas.
+
+            Args:
+                x {int}: x coordinate of the box.
+                y {int}: y coordinate of the box.
+
+            Returns:
+                Tuple[int, int]: top_left corner of the box.
+                Tuple[int, int]: bottom_right corner of the box.
+        """
+        top_left = (x * self.box_width,
+                    y * self.box_height)
+        bottom_right = (top_left[0] + self.box_width,
+                        top_left[1] + self.box_height)
+
+        return top_left, bottom_right
+
+    def _abs_to_box(self, x: int, y: int) -> Tuple:
+        """ Converts absolute coordinates where the user clicked to the box in
+        which they clicked.
+
+            Args:
+                x {int}: x coordinate of the user's click.
+                y {int}: y coordinate of the user's click.
+
+            Returns:
+                Tuple[int, int]: coordinates of the box.
+        """
+        box_x = x // self.box_width
+        box_y = y // self.box_height
+
+        return box_x, box_y
 
     def _draw_obstacle(self, event: tk.Event) -> None:
         """ Draw an obstacle (in the form of a filled in square) on the screen.
@@ -52,20 +92,37 @@ class Window:
             None
         """
         # Get the box that the user clicked.
-        box_x = event.x // self.box_width
-        box_y = event.y // self.box_height
+        box_x, box_y = self._abs_to_box(event.x, event.y)
 
-        # Compute corners of box and draw on the canvas
-        top_left = [box_x * self.box_width,
-                    box_y * self.box_height]
-        bottom_right = [top_left[0] + self.box_width,
-                        top_left[1] + self.box_height]
+        # No need to draw the obstacle if it already exists
+        if (box_x, box_y) in self.obstacles.values():
+            return
 
-        self.canvas.create_rectangle(top_left, bottom_right, fill='black')
+        # Compute corners of box and draw a rectangle on the canvas
+        top_left, bottom_right = self._box_to_corner_coords(box_x, box_y)
+
+        id = self.canvas.create_rectangle(top_left, bottom_right, fill='black')
         self.canvas.pack()
+        self.obstacles[id] = box_x, box_y
 
-    def _erase_obstacle(self, event):
-        pass
+    def _erase_obstacle(self, event: tk.Event) -> None:
+        """ Erase an obstacle (in the form of a filled in square) on the screen.
+
+        Args:
+            event {tkinder.Event}: details from the triggered event
+
+        Returns:
+            None
+        """
+        # Get the IDs of all items overlapping where the user clicked.
+        ids = self.canvas.find_overlapping(event.x, event.y, event.x, event.y)
+
+        # Make sure there is only one item where the user clicked (looking for
+        # a box) and that the item is in the obstacles list (as it's possible
+        # the user clicked on a line that defines the grid).
+        if len(ids) == 1 and ids[0] in self.obstacles.keys():
+            self.canvas.delete(ids[0])
+            del self.obstacles[ids[0]]
 
     def activate(self):
         self.root.mainloop()
