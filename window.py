@@ -14,7 +14,7 @@ class Window:
     """
     box_width = 25   # Width of a box in the grid.
     box_height = 25  # Height of a box in the grid.
-    obstacles = {}   # Dictionary of tkinter id to box coordinates.
+    obstacles = {}   # Dictionary of tkinter ID to box coordinates.
 
     def __init__(self, width: int = 500, height: int = 500) -> None:
         """ Initialize the window, including drawing the grid and registering
