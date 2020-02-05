@@ -18,10 +18,10 @@ class Window:
     obstacles: Dict[int, Tuple[int, int]] = {}
 
     def __init__(self, width: int = 500, height: int = 500) -> None:
-        self.root = tk.Tk()
+        self._root = tk.Tk()
         self.width = width
         self.height = height
-        self.canvas = tk.Canvas(self.root, width=width, height=height)
+        self.canvas = tk.Canvas(self._root, width=width, height=height)
 
         self.__create_window()
 
@@ -37,7 +37,7 @@ class Window:
             self.canvas.create_line([0, y], [self.width, y])
         self.canvas.pack()
 
-        button = tk.Button(self.root, text="Start A*", height=2, width=10)
+        button = tk.Button(self._root, text="Start A*", height=2, width=10)
         button.pack(side=tk.LEFT)
 
         # Left mouse button should create an obstacle, right mouse button
@@ -46,6 +46,10 @@ class Window:
         self.canvas.bind('<Button-1>', self.__draw_obstacle)
         self.canvas.bind('<B3-Motion>', self.__erase_obstacle)
         self.canvas.bind('<Button-3>', self.__erase_obstacle)
+
+    @property
+    def root(self) -> tk.Tk:
+        return self._root
 
     def __draw_obstacle(self, event: tk.Event) -> None:
         """ Draw an obstacle (a filled square) on the screen."""
@@ -92,6 +96,3 @@ class Window:
         in which they clicked.
         """
         return x // self.box_width, y // self.box_height
-
-    def activate(self):
-        self.root.mainloop()

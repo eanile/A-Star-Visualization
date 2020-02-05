@@ -4,8 +4,8 @@ import window
 
 def main() -> int:
     """ Entry point of the program. """
-    win_root = window.Window()
-    win_root.activate()
+    main_window = window.Window()
+    main_window.root.mainloop()
     return 0
 
 
