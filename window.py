@@ -57,7 +57,7 @@ class Window:
     def __draw_obstacle(self, event: tk.Event) -> None:
         """ Draw an obstacle (a filled square) on the screen."""
         # Get the coordinates of the box that the user clicked.
-        coords = self.abs_to_box_coords(event.x, event.y)
+        coords = self.abs_to_box_coords((event.x, event.y))
 
         # No need to draw the obstacle if it already exists or if the user
         # clicked in an area outside the grid.
@@ -96,11 +96,11 @@ class Window:
 
         return top_left, bottom_right
 
-    def abs_to_box_coords(self, x: int, y: int) -> Tuple[int, int]:
+    def abs_to_box_coords(self, abs_coords: Coordinate) -> Coordinate:
         """ Converts the absolute coordinates where the user clicked to the box
         in which they clicked.
         """
-        return x // self.box_width, y // self.box_height
+        return abs_coords[0] // self.box_width, abs_coords[1] // self.box_height
 
     def out_of_bounds(self, box_coords: Coordinate) -> bool:
         """ Return whether the coordinates of a box that the user clicked is
