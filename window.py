@@ -14,17 +14,17 @@ class Window:
     Class Variables:
         box_width: Width of a box in the grid.
         box_height: Height of a box in the grid.
-        obstacles: Dictionary of tkinter ID to box coordinates.
+        __obstacles: Dictionary of tkinter ID to box coordinates.
     """
     box_width: int = 25
     box_height: int = 25
-    obstacles: Dict[int, Tuple[int, int]] = {}
+    __obstacles: Dict[int, Coordinate] = {}
 
     def __init__(self, width: int = 500, height: int = 500) -> None:
-        self._root = tk.Tk()
+        self.__root = tk.Tk()
         self.width = width
         self.height = height
-        self.canvas = tk.Canvas(self._root, width=width, height=height)
+        self.canvas = tk.Canvas(self.__root, width=width, height=height)
 
         self.__create_window()
 
@@ -34,13 +34,13 @@ class Window:
         """
         # Create vertical and horizontal lines that define the grid and draw
         # them on the canvas.
-        for x in range(0, self.width + 1, self.box_width):
+        for x in range(0, self.width, self.box_width):
             self.canvas.create_line([x, 0], [x, self.height])
-        for y in range(0, self.height + 1, self.box_height):
+        for y in range(0, self.height, self.box_height):
             self.canvas.create_line([0, y], [self.width, y])
         self.canvas.pack()
 
-        button = tk.Button(self._root, text="Start A*", height=2, width=10)
+        button = tk.Button(self.__root, text="Start A*", height=2, width=10)
         button.pack(side=tk.LEFT)
 
         # Left mouse button should create an obstacle, right mouse button
@@ -52,7 +52,11 @@ class Window:
 
     @property
     def root(self) -> tk.Tk:
-        return self._root
+        return self.__root
+
+    @property
+    def obstacles(self) -> Dict[int, Coordinate]:
+        return self.__obstacles
 
     def __draw_obstacle(self, event: tk.Event) -> None:
         """ Draw an obstacle (a filled square) on the screen."""
@@ -61,7 +65,7 @@ class Window:
 
         # No need to draw the obstacle if it already exists or if the user
         # clicked in an area outside the grid.
-        if coords in self.obstacles.values() or self.out_of_bounds(coords):
+        if coords in self.__obstacles.values() or self.out_of_bounds(coords):
             return
 
         # Compute corners of box and draw a rectangle on the canvas
@@ -69,7 +73,7 @@ class Window:
 
         id = self.canvas.create_rectangle(top_left, bottom_right, fill='black')
         self.canvas.pack()
-        self.obstacles[id] = coords
+        self.__obstacles[id] = coords
 
     def __erase_obstacle(self, event: tk.Event) -> None:
         """ Erase an obstacle (a filled square) on the screen."""
@@ -79,9 +83,9 @@ class Window:
         # Make sure there is only one item where the user clicked (looking for
         # a box) and that the item is in the obstacles list (as it's possible
         # the user clicked on a line that defines the grid).
-        if len(ids) == 1 and ids[0] in self.obstacles.keys():
+        if len(ids) == 1 and ids[0] in self.__obstacles.keys():
             self.canvas.delete(ids[0])
-            del self.obstacles[ids[0]]
+            del self.__obstacles[ids[0]]
 
     def box_to_corner_coords(self, box_coords: Coordinate) -> Tuple[Coordinate,
                                                                     Coordinate]:
