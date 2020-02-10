@@ -87,27 +87,34 @@ class Window:
         clicks each button.
         """
         button = tk.Button(
-            self.__buttons, text="Start A*",
-            wraplength=80, height=2, width=15)
-        button.pack(fill='x')
-
-        button = tk.Button(
             self.__buttons, text="Place Starting Point",
             wraplength=80, height=2, width=15,
             command=lambda: self.__change_cell_colour(Colours.START.value))
-        button.pack(side=tk.RIGHT)
+        button.grid(row=0, column=0, padx=5, pady=5)
 
         button = tk.Button(
             self.__buttons, text="Place Ending Point",
             wraplength=80, height=2, width=15,
             command=lambda: self.__change_cell_colour(Colours.END.value))
-        button.pack(side=tk.RIGHT)
+        button.grid(row=0, column=1, padx=5, pady=5)
 
         button = tk.Button(
             self.__buttons, text="Place Obstacles",
             wraplength=80, height=2, width=15,
             command=lambda: self.__change_cell_colour(Colours.OBSTACLE.value))
-        button.pack(side=tk.RIGHT)
+        button.grid(row=0, column=2, padx=5, pady=5)
+
+        button = tk.Button(
+            self.__buttons, text="Clear",
+            wraplength=80, height=2, width=15,
+            command=lambda: self.__clear_canvas())
+        button.grid(row=0, column=3, padx=5, pady=5)
+
+        button = tk.Button(
+            self.__buttons, text="Start A*",
+            wraplength=80, height=2, width=15)
+        button.grid(row=1, column=0, columnspan=4, sticky=tk.W+tk.E,
+                    padx=5, pady=5)
 
         self.__buttons.pack()
 
@@ -173,6 +180,15 @@ class Window:
             # Remove from screen and stop keeping track of the cell.
             self.__canvas.delete(self.__cells[cell_id].tk_id)
             del self.__cells[cell_id]
+
+    def __clear_canvas(self) -> None:
+        """ Remove all drawn cells from the grid. """
+        for cell in self.__cells.values():
+            self.__canvas.delete(cell.tk_id)
+
+        self.__cells.clear()
+        self.__start = None
+        self.__end = None
 
     def cell_exists(self, cell_id: Cell_ID) -> bool:
         """ Return if a cell already exists in the specified cell. """
