@@ -204,6 +204,9 @@ class Window:
         self.__end = None
 
     def __find_shortest_path(self) -> List[Cell_ID]:
+        """ Callback function to find the shortest path. Displays an error
+        message if a starting and ending point are not selected.
+        """
         if self.__start is None or self.__end is None:
             messagebox.showerror("Error", "Please select both a starting"
                                           " and ending point before running"
