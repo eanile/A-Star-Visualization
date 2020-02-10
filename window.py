@@ -53,12 +53,17 @@ class Window:
         self.__cells = {}
         self.__start = None
         self.__end = None
-        self.__root = tk.Tk()
-        self.__canvas = tk.Canvas(self.__root, width=width+1, height=height+1)
-        self.__canvas.configure(borderwidth=0, highlightthickness=0)
-        self.__create_window()
 
-    def __create_window(self) -> None:
+        self.__root = tk.Tk()
+        self.__canvas = tk.Canvas(
+            self.__root, width=width+1, height=height+1, borderwidth=0,
+            highlightthickness=0)
+        self.__buttons = tk.Frame(self.__root, relief=tk.RAISED)
+
+        self.__create_canvas()
+        self.__create_buttons()
+
+    def __create_canvas(self) -> None:
         """ Draw the grid and register callback functions for when a user
         clicks the screen.
         """
@@ -70,36 +75,41 @@ class Window:
             self.__canvas.create_line([0, y], [self.width, y])
         self.__canvas.pack()
 
-        # Place all buttons.
-        button = tk.Button(
-            self.__root, text="Place Obstacles",
-            wraplength=80, height=2, width=15,
-            command=lambda: self.__change_cell_colour(Colours.OBSTACLE.value))
-        button.pack(side=tk.RIGHT)
-
-        button = tk.Button(
-            self.__root, text="Place Ending Point",
-            wraplength=80, height=2, width=15,
-            command=lambda: self.__change_cell_colour(Colours.END.value))
-        button.pack(side=tk.RIGHT)
-
-        button = tk.Button(
-            self.__root, text="Place Starting Point",
-            wraplength=80, height=2, width=15,
-            command=lambda: self.__change_cell_colour(Colours.START.value))
-        button.pack(side=tk.RIGHT)
-
-        button = tk.Button(
-            self.__root, text="Start A*",
-            wraplength=80, height=2, width=15)
-        button.pack(side=tk.RIGHT)
-
         # Left mouse button should create a cell, right mouse button should
         # erase a cell.
         self.__canvas.bind('<B1-Motion>', self.__draw_cell)
         self.__canvas.bind('<Button-1>', self.__draw_cell)
         self.__canvas.bind('<B3-Motion>', self.__erase_cell)
         self.__canvas.bind('<Button-3>', self.__erase_cell)
+
+    def __create_buttons(self) -> None:
+        """ Draw the buttons and register callback functions for when a user
+        clicks each button.
+        """
+        button = tk.Button(
+            self.__buttons, text="Start A*",
+            wraplength=80, height=2, width=15)
+        button.pack(fill='x')
+
+        button = tk.Button(
+            self.__buttons, text="Place Starting Point",
+            wraplength=80, height=2, width=15,
+            command=lambda: self.__change_cell_colour(Colours.START.value))
+        button.pack(side=tk.RIGHT)
+
+        button = tk.Button(
+            self.__buttons, text="Place Ending Point",
+            wraplength=80, height=2, width=15,
+            command=lambda: self.__change_cell_colour(Colours.END.value))
+        button.pack(side=tk.RIGHT)
+
+        button = tk.Button(
+            self.__buttons, text="Place Obstacles",
+            wraplength=80, height=2, width=15,
+            command=lambda: self.__change_cell_colour(Colours.OBSTACLE.value))
+        button.pack(side=tk.RIGHT)
+
+        self.__buttons.pack()
 
     @property
     def root(self) -> tk.Tk:
