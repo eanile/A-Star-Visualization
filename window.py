@@ -1,8 +1,9 @@
 import tkinter as tk
+import tkinter.messagebox as messagebox
 
 from enum import Enum
 from cell import Cell
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 # Type definitions.
 Coordinate = Tuple[int, int]
@@ -14,8 +15,8 @@ class Colours(Enum):
     the window's grid.
     """
     OBSTACLE = 'black'
-    START = 'blue'
-    END = 'yellow'
+    START = 'cyan'
+    END = 'magenta'
 
 
 class Window:
@@ -120,6 +121,7 @@ class Window:
         button = tk.Button(
             self.__buttons, text="Start A*",
             wraplength=80, height=2, width=15)
+        button.configure(command=lambda: self.__find_shortest_path())
         button.grid(row=1, column=0, columnspan=4, sticky=tk.W+tk.E,
                     padx=5, pady=5)
 
@@ -200,6 +202,15 @@ class Window:
         self.__cells.clear()
         self.__start = None
         self.__end = None
+
+    def __find_shortest_path(self) -> List[Cell_ID]:
+        if self.__start is None or self.__end is None:
+            messagebox.showerror("Error", "Please select both a starting"
+                                          " and ending point before running"
+                                          " the pathfinding algorithm!")
+        else:
+            import pathfinding
+            return pathfinding.a_star(self)
 
     def cell_exists(self, cell_id: Cell_ID) -> bool:
         """ Return if a cell already exists in the specified cell. """
