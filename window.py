@@ -3,11 +3,15 @@ import tkinter.messagebox as messagebox
 
 from enum import Enum
 from cell import Cell
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 # Type definitions.
 Coordinate = Tuple[int, int]
 Cell_ID = int
+
+CANVAS_BG_COLOUR = '#f0f0f0'
+FRAME_BG_COLOUR = '#cfcfcf'
+BUTTON_BG_COLOUR = '#fff'
 
 
 class Colours(Enum):
@@ -60,8 +64,9 @@ class Window:
         self.__root = tk.Tk()
         self.__canvas = tk.Canvas(
             self.__root, width=width+1, height=height+1, borderwidth=0,
-            highlightthickness=0)
-        self.__buttons = tk.Frame(self.__root, relief=tk.RAISED)
+            highlightthickness=0, bg=CANVAS_BG_COLOUR)
+        self.__buttons = tk.Frame(
+            self.__root, bg=FRAME_BG_COLOUR)
 
         self.__create_canvas()
         self.__create_buttons()
@@ -91,7 +96,7 @@ class Window:
         """
         button = tk.Button(
             self.__buttons, text="Place Obstacles",
-            wraplength=80, height=2, width=15)
+            wraplength=80, height=2, width=15, bg=BUTTON_BG_COLOUR)
         button.configure(command=lambda b=button: self.__change_cell_colour(
             Colours.OBSTACLE.value, b))
         button.grid(row=0, column=0, padx=5, pady=5)
@@ -100,30 +105,30 @@ class Window:
 
         button = tk.Button(
             self.__buttons, text="Place Starting Point",
-            wraplength=80, height=2, width=15)
+            wraplength=80, height=2, width=15, bg=BUTTON_BG_COLOUR)
         button.configure(command=lambda b=button: self.__change_cell_colour(
             Colours.START.value, b))
         button.grid(row=0, column=1, padx=5, pady=5)
 
         button = tk.Button(
             self.__buttons, text="Place Ending Point",
-            wraplength=80, height=2, width=15)
+            wraplength=80, height=2, width=15, bg=BUTTON_BG_COLOUR)
         button.configure(command=lambda b=button: self.__change_cell_colour(
             Colours.END.value, b))
         button.grid(row=0, column=2, padx=5, pady=5)
 
         button = tk.Button(
             self.__buttons, text="Clear",
-            wraplength=80, height=2, width=15)
+            wraplength=80, height=2, width=15, bg=BUTTON_BG_COLOUR)
         button.configure(command=lambda: self.__clear_canvas())
         button.grid(row=0, column=3, padx=5, pady=5)
 
         button = tk.Button(
             self.__buttons, text="Start A*",
-            wraplength=80, height=2, width=15)
+            wraplength=80, height=2, bg=BUTTON_BG_COLOUR)
         button.configure(command=lambda: self.__find_shortest_path())
         button.grid(row=1, column=0, columnspan=4, sticky=tk.W+tk.E,
-                    padx=5, pady=5)
+                    padx=5, pady=(0, 5))
 
         self.__buttons.pack()
 
