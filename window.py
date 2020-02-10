@@ -203,7 +203,7 @@ class Window:
         self.__start = None
         self.__end = None
 
-    def __find_shortest_path(self) -> List[Cell_ID]:
+    def __find_shortest_path(self) -> None:
         """ Callback function to find the shortest path. Displays an error
         message if a starting and ending point are not selected.
         """
@@ -213,7 +213,7 @@ class Window:
                                           " the pathfinding algorithm!")
         else:
             import pathfinding
-            return pathfinding.a_star(self)
+            pathfinding.a_star(self)
 
     def cell_exists(self, cell_id: Cell_ID) -> bool:
         """ Return if a cell already exists in the specified cell. """
