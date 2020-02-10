@@ -87,27 +87,32 @@ class Window:
         clicks each button.
         """
         button = tk.Button(
-            self.__buttons, text="Place Starting Point",
-            wraplength=80, height=2, width=15,
-            command=lambda: self.__change_cell_colour(Colours.START.value))
+            self.__buttons, text="Place Obstacles",
+            wraplength=80, height=2, width=15)
+        button.configure(command=lambda b=button: self.__change_cell_colour(
+            Colours.OBSTACLE.value, b))
         button.grid(row=0, column=0, padx=5, pady=5)
+        # "Place Obstacles" button should be focused by default.
+        button.focus()
 
         button = tk.Button(
-            self.__buttons, text="Place Ending Point",
-            wraplength=80, height=2, width=15,
-            command=lambda: self.__change_cell_colour(Colours.END.value))
+            self.__buttons, text="Place Starting Point",
+            wraplength=80, height=2, width=15)
+        button.configure(command=lambda b=button: self.__change_cell_colour(
+            Colours.START.value, b))
         button.grid(row=0, column=1, padx=5, pady=5)
 
         button = tk.Button(
-            self.__buttons, text="Place Obstacles",
-            wraplength=80, height=2, width=15,
-            command=lambda: self.__change_cell_colour(Colours.OBSTACLE.value))
+            self.__buttons, text="Place Ending Point",
+            wraplength=80, height=2, width=15)
+        button.configure(command=lambda b=button: self.__change_cell_colour(
+            Colours.END.value, b))
         button.grid(row=0, column=2, padx=5, pady=5)
 
         button = tk.Button(
             self.__buttons, text="Clear",
-            wraplength=80, height=2, width=15,
-            command=lambda: self.__clear_canvas())
+            wraplength=80, height=2, width=15)
+        button.configure(command=lambda: self.__clear_canvas())
         button.grid(row=0, column=3, padx=5, pady=5)
 
         button = tk.Button(
@@ -134,9 +139,13 @@ class Window:
     def end(self) -> Optional[Cell_ID]:
         return self.__end
 
-    def __change_cell_colour(self, colour: str) -> None:
-        """ Change the colour of the cells being drawn on-screen. """
+    def __change_cell_colour(self, colour: str, button: tk.Button) -> None:
+        """ Change the colour of the cells being drawn on-screen. This method
+        also changes the focused button the one clicked.
+        """
+        # Confirm the colour is expected before changing it.
         assert colour in set(colour.value for colour in Colours)
+        button.focus()
         self.__colour = colour
 
     def __draw_cell(self, event: tk.Event) -> None:
