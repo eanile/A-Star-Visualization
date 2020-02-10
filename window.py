@@ -9,8 +9,10 @@ Coordinate = Tuple[int, int]
 Cell_ID = int
 
 
-# Define the colours used in the window.
 class Colours(Enum):
+    """ This class defines all valid colours that can be used to draw cells on
+    the window's grid.
+    """
     OBSTACLE = 'black'
     START = 'blue'
     END = 'yellow'
