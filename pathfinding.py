@@ -7,6 +7,8 @@ from typing import List, Optional, Tuple
 # Type definitions.
 Cell_ID = int
 
+ADJACENT_COST = 1
+
 
 class Node:
     """ Holds important information about a Cell when calculating the shortest
@@ -66,13 +68,9 @@ def a_star(window: window.Window) -> List[Cell_ID]:
     assert start is not None
     assert end is not None
 
-    print(f"Executing A*: start={window.cells[start].coords},"
-          f" end={window.cells[end].coords}")
-    exit()
-
     # List of all cells to easily retrieve information from.
     # Heap will store the cell ID along with it's f_score.
-    cells = [Node()] * window.get_num_cells()
+    cells = [Node() for _ in range(window.get_num_cells())]
     heap = Heap()
 
     # Cost from start to start is 0; starting cell's cost is purely heuristic.
@@ -81,9 +79,15 @@ def a_star(window: window.Window) -> List[Cell_ID]:
     heap.push((cells[start].f_score, start))
 
     while not heap.empty():
-        # Get cell with the lowest f_score.
-        top = heap.pop()
-        current_id = top[1]
+        # Get cell with the lowest f_score. Keep popping until either the heap
+        # is empty or we find an up to date node (we can insert the same node
+        # multiple times but with different/outdated f_scores).
+        while True:
+            top = heap.pop()
+            current_id = top[1]
+
+            if heap.empty() or cells[current_id].f_score == top[0]:
+                break
 
         # Found the path to the end.
         if current_id == end:
@@ -91,10 +95,22 @@ def a_star(window: window.Window) -> List[Cell_ID]:
 
         # Mark cell as visited and check its neighbours.
         cells[current_id].visited = True
-        for neighbour in window.get_neighbours(current_id):
-            if cells[neighbour].visited:
+        for neighbour_id in window.get_neighbours(current_id):
+            if cells[neighbour_id].visited:
                 continue
 
+            # Update neighbour's information if a better path is found and add
+            # to the heap.
+            new_g_score = cells[current_id].g_score + ADJACENT_COST
+            if new_g_score < cells[neighbour_id].g_score:
+                cells[neighbour_id].came_from = current_id
+                cells[neighbour_id].g_score = new_g_score
+                cells[neighbour_id].f_score = new_g_score + \
+                    h_score(window, neighbour_id, end)
+
+                heap.push((cells[neighbour_id].f_score, neighbour_id))
+
+    # No solution, return empty path.
     return []
 
 
@@ -108,5 +124,16 @@ def h_score(window: window.Window, cell1: Cell_ID, cell2: Cell_ID) -> float:
 def construct_path(start: Cell_ID, end: Cell_ID,
                    cells: List[Node]) -> List[Cell_ID]:
     """ Construct the shortest path taken from start to end. """
-    print("TODO implement construct_path")
-    return []
+    if start == end:
+        return []
+
+    path = [end]
+
+    # Create the path by working backwards.
+    current = end
+    while current is not start:
+        path.append(cells[current].came_from)
+        current = cells[current].came_from
+
+    path.reverse()
+    return path

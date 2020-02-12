@@ -3,7 +3,7 @@ import tkinter.messagebox as messagebox
 
 from enum import Enum
 from cell import Cell
-from typing import Dict, FrozenSet, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 # Type definitions.
 Coordinate = Tuple[int, int]
@@ -21,6 +21,7 @@ class Colours(Enum):
     OBSTACLE = 'black'
     START = 'cyan'
     END = 'magenta'
+    PATH = 'green'
 
 
 class Window:
@@ -42,6 +43,9 @@ class Window:
             calculated based on the (x,y) position of the cell in the grid.
         __start: Cell ID that represents the starting point of the algorithm.
         __end: Cell ID that represents the ending point of the algorithm.
+        __shortest_path: Dictionary of Cell ID to Cell structure. These cells
+            are excluded from the other cells dictionary because they are
+            cleared at different times.
     """
     cell_width: int = 25
     cell_height: int = 25
@@ -54,6 +58,7 @@ class Window:
     __cells: Dict[Cell_ID, Cell]
     __start: Optional[Cell_ID]
     __end: Optional[Cell_ID]
+    __shortest_path: Dict[Cell_ID, Cell]
 
     def __init__(self, width: int = 500, height: int = 500) -> None:
         self.width = width
@@ -62,6 +67,7 @@ class Window:
         self.__cells = {}
         self.__start = None
         self.__end = None
+        self.__shortest_path = {}
 
         # Initialize window sections that interactive elements will live.
         self.__root = tk.Tk()
@@ -88,10 +94,10 @@ class Window:
 
         # Left mouse button should create a cell, right mouse button should
         # erase a cell.
-        self.__canvas.bind('<B1-Motion>', self.__draw_cell)
-        self.__canvas.bind('<Button-1>', self.__draw_cell)
-        self.__canvas.bind('<B3-Motion>', self.__erase_cell)
-        self.__canvas.bind('<Button-3>', self.__erase_cell)
+        self.__canvas.bind('<B1-Motion>', self.__draw_callback)
+        self.__canvas.bind('<Button-1>', self.__draw_callback)
+        self.__canvas.bind('<B3-Motion>', self.__erase_callback)
+        self.__canvas.bind('<Button-3>', self.__erase_callback)
 
     def __create_buttons(self) -> None:
         """ Draw the buttons and register callback functions for when a user
@@ -157,29 +163,24 @@ class Window:
         also changes the focused button the one clicked.
         """
         # Confirm the colour is expected before changing it.
-        assert colour in set(colour.value for colour in Colours)
+        assert colour in [colour.value for colour in Colours]
         button.focus()
         self.__colour = colour
 
-    def __draw_cell(self, event: tk.Event) -> None:
+    def __draw_callback(self, event: tk.Event) -> None:
         """ Draw a cell (a filled square) on the screen. """
-        cell_coords = self.abs_to_cell((event.x, event.y))
-        cell_id = self.cell_to_cell_id(cell_coords)
+        cell_id = self.abs_to_cell_id((event.x, event.y))
 
         # Don't draw the cell if a cell already exists, the user clicked in an
         # area outside the grid, or the user is drawing a start/end cell when
         # a start/end cell already exists.
         if self.cell_exists(cell_id) or \
-           self.out_of_bounds(cell_coords) or \
+           self.out_of_bounds(self.cell_id_to_cell(cell_id)) or \
            (self.__end is not None and self.__colour == Colours.END.value) or \
            (self.__start is not None and self.__colour == Colours.START.value):
             return
 
-        # Compute corners of cell and draw it on the canvas.
-        tk_id = self.__canvas.create_rectangle(
-            self.cell_to_corner_coords(cell_coords), fill=self.__colour)
-        self.__canvas.pack()
-        self.__cells[cell_id] = Cell(tk_id, cell_coords, self.__colour)
+        self.draw_cell(cell_id, self.__colour, self.__cells)
 
         # Make note if a start/end cell is drawn.
         if self.__colour == Colours.START.value:
@@ -187,7 +188,7 @@ class Window:
         elif self.__colour == Colours.END.value:
             self.__end = cell_id
 
-    def __erase_cell(self, event: tk.Event) -> None:
+    def __erase_callback(self, event: tk.Event) -> None:
         """ Erase a cell (a filled square) on the screen. """
         cell_id = self.abs_to_cell_id((event.x, event.y))
 
@@ -203,7 +204,14 @@ class Window:
             del self.__cells[cell_id]
 
     def __clear_canvas(self) -> None:
-        """ Remove all drawn cells from the grid. """
+        """ Remove all drawn cells from the grid. If a shortest path is drawn,
+        it is removed first. """
+        if self.__shortest_path:
+            for cell in self.__shortest_path.values():
+                self.__canvas.delete(cell.tk_id)
+            self.__shortest_path.clear()
+            return
+
         for cell in self.__cells.values():
             self.__canvas.delete(cell.tk_id)
 
@@ -221,11 +229,36 @@ class Window:
                                           " the pathfinding algorithm!")
         else:
             import pathfinding
-            pathfinding.a_star(self)
+            path = pathfinding.a_star(self)
+            if not path:
+                messagebox.showinfo("Info", "No path found!")
+            self.__draw_shortest_path(path)
+
+    def __draw_shortest_path(self, path: List[Cell_ID]) -> None:
+        """ Draw the shortest path on the grid. """
+        for cell_id in path[1:-1]:
+            self.draw_cell(cell_id, Colours.PATH.value, self.__shortest_path)
+
+    def draw_cell(self, cell_id: Cell_ID, colour: str,
+                  cells_dict: Dict[Cell_ID, Cell]) -> None:
+        """ Draw a cell on the grid with the specified colour. The cells_dict
+        is the dictionary the new cell should be tracked in. """
+        assert colour in [colour.value for colour in Colours]
+
+        cell_coords = self.cell_id_to_cell(cell_id)
+        tk_id = self.__canvas.create_rectangle(
+            self.cell_to_corner_coords(cell_coords), fill=colour)
+        self.__canvas.pack()
+        cells_dict[cell_id] = Cell(tk_id, cell_coords, colour)
 
     def cell_exists(self, cell_id: Cell_ID) -> bool:
         """ Return if a cell already exists in the specified cell. """
         return cell_id in self.__cells.keys()
+
+    def obstacle_exists(self, cell_id: Cell_ID) -> bool:
+        """ Return if an obstacle exists in the specified cell. """
+        return (cell_id in self.__cells.keys() and
+                self.__cells[cell_id].colour == Colours.OBSTACLE.value)
 
     def cell_to_corner_coords(
        self, cell_coords: Coordinate) -> Tuple[Coordinate, Coordinate]:
@@ -283,7 +316,7 @@ class Window:
         return (self.width // self.cell_width) * \
                (self.height // self.cell_height)
 
-    def get_neighbours(self, cell_id: Cell_ID) -> FrozenSet[List[Cell_ID]]:
+    def get_neighbours(self, cell_id: Cell_ID) -> List[Cell_ID]:
         """ Get surrounding cells (N,E,S,W). """
         cell = self.cell_id_to_cell(cell_id)
 
@@ -292,6 +325,7 @@ class Window:
         south = (cell[0], cell[1]+1)
         west = (cell[0]-1, cell[1])
 
-        return frozenset([[self.cell_to_cell_id(coords)
-                         for coords in [north, east, south, west]
-                         if not self.out_of_bounds(coords)]])
+        return [self.cell_to_cell_id(coords)
+                for coords in [north, east, south, west]
+                if not self.out_of_bounds(coords) and
+                not self.obstacle_exists(self.cell_to_cell_id(coords))]
