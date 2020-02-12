@@ -168,8 +168,8 @@ class Window:
         # a start/end cell already exists.
         if self.cell_exists(cell_id) or \
            self.out_of_bounds(cell_coords) or \
-           (self.__end is not None and self.__colour == Colours.END.value) or \
-           (self.__start is not None and self.__colour == Colours.START.value):
+           (self.__start and self.__colour == Colours.START.value) or \
+           (self.__end and self.__colour == Colours.END.value):
             return
 
         # Compute corners of cell and draw it on the canvas.
