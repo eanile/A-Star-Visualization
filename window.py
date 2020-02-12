@@ -3,7 +3,7 @@ import tkinter.messagebox as messagebox
 
 from enum import Enum
 from cell import Cell
-from typing import Dict, Optional, Tuple
+from typing import Dict, FrozenSet, List, Optional, Tuple
 
 # Type definitions.
 Coordinate = Tuple[int, int]
@@ -29,10 +29,12 @@ class Window:
     destroy obstacles before running the algorithm.
 
     Class Variables:
-        width: Width of the window (in pixels).
-        height: Height of the window (in pixels).
         cell_width: Width of a cell in the grid (in pixels).
         cell_height: Height of a cell in the grid (in pixels).
+
+    Instance Variables:
+        width: Width of the window (in pixels).
+        height: Height of the window (in pixels).
         __root: Represents the tkinter window.
         __canvas: Displayed in the window and holds all elements drawn.
         __colour: Current colour chosen to draw cells with.
@@ -41,6 +43,9 @@ class Window:
         __start: Cell ID that represents the starting point of the algorithm.
         __end: Cell ID that represents the ending point of the algorithm.
     """
+    cell_width: int = 25
+    cell_height: int = 25
+
     width: int
     height: int
     __root: tk.Tk
@@ -50,9 +55,6 @@ class Window:
     __start: Optional[Cell_ID]
     __end: Optional[Cell_ID]
 
-    cell_width: int = 25
-    cell_height: int = 25
-
     def __init__(self, width: int = 500, height: int = 500) -> None:
         self.width = width
         self.height = height
@@ -61,6 +63,7 @@ class Window:
         self.__start = None
         self.__end = None
 
+        # Initialize window sections that interactive elements will live.
         self.__root = tk.Tk()
         self.__canvas = tk.Canvas(
             self.__root, width=width+1, height=height+1, borderwidth=0,
@@ -243,6 +246,13 @@ class Window:
 
         return cell_id
 
+    def cell_id_to_cell(self, cell_id: Cell_ID) -> Coordinate:
+        """ Convert's a cell ID to its position on the grid. """
+        cell_coords = (cell_id % (self.width // self.cell_width),
+                       cell_id // (self.width // self.cell_width))
+
+        return cell_coords
+
     def abs_to_cell(self, abs_coords: Coordinate) -> Coordinate:
         """ Converts absolute coordinates on the grid to the cell coordinates
         at that position.
@@ -267,3 +277,21 @@ class Window:
            cell_coords[1] > self.height // self.cell_height - 1:
             return True
         return False
+
+    def get_num_cells(self) -> int:
+        """ Get the number of cells on the grid. """
+        return (self.width // self.cell_width) * \
+               (self.height // self.cell_height)
+
+    def get_neighbours(self, cell_id: Cell_ID) -> FrozenSet[List[Cell_ID]]:
+        """ Get surrounding cells (N,E,S,W). """
+        cell = self.cell_id_to_cell(cell_id)
+
+        north = (cell[0], cell[1]-1)
+        east = (cell[0]+1, cell[1])
+        south = (cell[0], cell[1]+1)
+        west = (cell[0]-1, cell[1])
+
+        return frozenset([[self.cell_to_cell_id(coords)
+                         for coords in [north, east, south, west]
+                         if not self.out_of_bounds(coords)]])
