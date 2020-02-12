@@ -100,6 +100,7 @@ class Window:
         button.configure(command=lambda b=button: self.__change_cell_colour(
             Colours.OBSTACLE.value, b))
         button.grid(row=0, column=0, padx=5, pady=5)
+
         # "Place Obstacles" button should be focused by default.
         button.focus()
 
@@ -159,7 +160,6 @@ class Window:
 
     def __draw_cell(self, event: tk.Event) -> None:
         """ Draw a cell (a filled square) on the screen. """
-        # Get the cell coordinates and cell ID that the user clicked on.
         cell_coords = self.abs_to_cell((event.x, event.y))
         cell_id = self.cell_to_cell_id(cell_coords)
 
@@ -168,8 +168,8 @@ class Window:
         # a start/end cell already exists.
         if self.cell_exists(cell_id) or \
            self.out_of_bounds(cell_coords) or \
-           (self.__start and self.__colour == Colours.START.value) or \
-           (self.__end and self.__colour == Colours.END.value):
+           (self.__end is not None and self.__colour == Colours.END.value) or \
+           (self.__start is not None and self.__colour == Colours.START.value):
             return
 
         # Compute corners of cell and draw it on the canvas.
