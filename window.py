@@ -13,6 +13,12 @@ CANVAS_BG_COLOUR = '#f0f0f0'
 FRAME_BG_COLOUR = '#cfcfcf'
 BUTTON_BG_COLOUR = '#fff'
 
+BUTTON_PLACE_OBSTACLES = "Place Obstacles"
+BUTTON_PLACE_START = "Place Starting Point"
+BUTTON_PLACE_END = "Place Ending Point"
+BUTTON_CLEAR = "Clear"
+BUTTON_START_ALGORITHM = "Start Pathfinding Algorithm"
+
 
 class Colours(Enum):
     """ This class defines all valid colours that can be used to draw cells on
@@ -104,7 +110,7 @@ class Window:
         clicks each button.
         """
         button = tk.Button(
-            self.__buttons, text="Place Obstacles",
+            self.__buttons, text=BUTTON_PLACE_OBSTACLES,
             wraplength=80, height=2, width=15, bg=BUTTON_BG_COLOUR)
         button.configure(command=lambda b=button: self.__change_cell_colour(
             Colours.OBSTACLE.value, b))
@@ -114,28 +120,28 @@ class Window:
         button.focus()
 
         button = tk.Button(
-            self.__buttons, text="Place Starting Point",
+            self.__buttons, text=BUTTON_PLACE_START,
             wraplength=80, height=2, width=15, bg=BUTTON_BG_COLOUR)
         button.configure(command=lambda b=button: self.__change_cell_colour(
             Colours.START.value, b))
         button.grid(row=0, column=1, padx=5, pady=5)
 
         button = tk.Button(
-            self.__buttons, text="Place Ending Point",
+            self.__buttons, text=BUTTON_PLACE_END,
             wraplength=80, height=2, width=15, bg=BUTTON_BG_COLOUR)
         button.configure(command=lambda b=button: self.__change_cell_colour(
             Colours.END.value, b))
         button.grid(row=0, column=2, padx=5, pady=5)
 
         button = tk.Button(
-            self.__buttons, text="Clear",
+            self.__buttons, text=BUTTON_CLEAR,
             wraplength=80, height=2, width=15, bg=BUTTON_BG_COLOUR)
         button.configure(command=lambda: self.__clear_canvas())
         button.grid(row=0, column=3, padx=5, pady=5)
 
         button = tk.Button(
-            self.__buttons, text="Start A*",
-            wraplength=80, height=2, bg=BUTTON_BG_COLOUR)
+            self.__buttons, text=BUTTON_START_ALGORITHM,
+            height=2, bg=BUTTON_BG_COLOUR)
         button.configure(command=lambda: self.__find_shortest_path())
         button.grid(row=1, column=0, columnspan=4, sticky=tk.W+tk.E,
                     padx=5, pady=(0, 5))
@@ -169,6 +175,10 @@ class Window:
 
     def __draw_callback(self, event: tk.Event) -> None:
         """ Draw a cell (a filled square) on the screen. """
+        # Cannot draw if a path is drawn on the screen.
+        if self.__shortest_path:
+            return
+
         cell_id = self.abs_to_cell_id((event.x, event.y))
 
         # Don't draw the cell if a cell already exists, the user clicked in an
@@ -190,6 +200,10 @@ class Window:
 
     def __erase_callback(self, event: tk.Event) -> None:
         """ Erase a cell (a filled square) on the screen. """
+        # Cannot erase if a path is drawn on the screen.
+        if self.__shortest_path:
+            return
+
         cell_id = self.abs_to_cell_id((event.x, event.y))
 
         if self.cell_exists(cell_id):
@@ -210,6 +224,14 @@ class Window:
             for cell in self.__shortest_path.values():
                 self.__canvas.delete(cell.tk_id)
             self.__shortest_path.clear()
+
+            # Re-enable non-clear buttons after the path has been cleared
+            # from the screen.
+            for widget in self.__buttons.winfo_children():
+                if widget.winfo_class().upper() == "BUTTON":
+                    if widget.config("text")[-1] != BUTTON_CLEAR:
+                        widget.config(state=tk.NORMAL)
+
             return
 
         for cell in self.__cells.values():
@@ -230,14 +252,23 @@ class Window:
         else:
             import pathfinding
             path = pathfinding.a_star(self)
+
             if not path:
                 messagebox.showinfo("Info", "No path found!")
+                return
             self.__draw_shortest_path(path)
 
     def __draw_shortest_path(self, path: List[Cell_ID]) -> None:
         """ Draw the shortest path on the grid. """
         for cell_id in path[1:-1]:
             self.draw_cell(cell_id, Colours.PATH.value, self.__shortest_path)
+
+            # Disable every button except for the clear button to force the
+            # user to clear the path before making modifications to the grid.
+            for widget in self.__buttons.winfo_children():
+                if widget.winfo_class().upper() == "BUTTON":
+                    if widget.config("text")[-1] != BUTTON_CLEAR:
+                        widget.config(state=tk.DISABLED)
 
     def draw_cell(self, cell_id: Cell_ID, colour: str,
                   cells_dict: Dict[Cell_ID, Cell]) -> None:
