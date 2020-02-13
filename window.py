@@ -9,22 +9,28 @@ from typing import Dict, List, Optional, Tuple
 Coordinate = Tuple[int, int]
 Cell_ID = int
 
+# Colours for UI elements.
 CANVAS_BG_COLOUR = '#f0f0f0'
 FRAME_BG_COLOUR = '#cfcfcf'
-BUTTON_BG_COLOUR = '#fff'
+BUTTON_BG_PLACE_OBSTACLES = '#e3e3e3'
+BUTTON_BG_PLACE_START = '#e8fffc'
+BUTTON_BG_PLACE_END = '#fff2fe'
+BUTTON_BG_CLEAR = '#fff'
+BUTTON_BG_START_ALGORITHM = '#f2fff4'
 
-BUTTON_PLACE_OBSTACLES = "Place Obstacles"
-BUTTON_PLACE_START = "Place Starting Point"
-BUTTON_PLACE_END = "Place Ending Point"
-BUTTON_CLEAR = "Clear"
-BUTTON_START_ALGORITHM = "Start Pathfinding Algorithm"
+# Strings for buttons.
+BUTTON_TEXT_PLACE_OBSTACLES = "Place Obstacles"
+BUTTON_TEXT_PLACE_START = "Place Starting Point"
+BUTTON_TEXT_PLACE_END = "Place Ending Point"
+BUTTON_TEXT_CLEAR = "Clear"
+BUTTON_TEXT_START_ALGORITHM = "Start Pathfinding Algorithm"
 
 
 class Colours(Enum):
     """ This class defines all valid colours that can be used to draw cells on
     the window's grid.
     """
-    OBSTACLE = 'black'
+    OBSTACLE = 'grey'
     START = 'cyan'
     END = 'magenta'
     PATH = 'green'
@@ -110,41 +116,41 @@ class Window:
         clicks each button.
         """
         button = tk.Button(
-            self.__buttons, text=BUTTON_PLACE_OBSTACLES,
-            wraplength=80, height=2, width=15, bg=BUTTON_BG_COLOUR)
+            self.__buttons, text=BUTTON_TEXT_PLACE_OBSTACLES,
+            wraplength=80, height=2, width=15, bg=BUTTON_BG_PLACE_OBSTACLES)
         button.configure(command=lambda b=button: self.__change_cell_colour(
             Colours.OBSTACLE.value, b))
-        button.grid(row=0, column=0, padx=5, pady=5)
+        button.grid(row=0, column=0, padx=5, pady=(15, 2.5))
 
         # "Place Obstacles" button should be focused by default.
         button.focus()
 
         button = tk.Button(
-            self.__buttons, text=BUTTON_PLACE_START,
-            wraplength=80, height=2, width=15, bg=BUTTON_BG_COLOUR)
+            self.__buttons, text=BUTTON_TEXT_PLACE_START,
+            wraplength=80, height=2, width=15, bg=BUTTON_BG_PLACE_START)
         button.configure(command=lambda b=button: self.__change_cell_colour(
             Colours.START.value, b))
-        button.grid(row=0, column=1, padx=5, pady=5)
+        button.grid(row=0, column=1, padx=5, pady=(15, 2.5))
 
         button = tk.Button(
-            self.__buttons, text=BUTTON_PLACE_END,
-            wraplength=80, height=2, width=15, bg=BUTTON_BG_COLOUR)
+            self.__buttons, text=BUTTON_TEXT_PLACE_END,
+            wraplength=80, height=2, width=15, bg=BUTTON_BG_PLACE_END)
         button.configure(command=lambda b=button: self.__change_cell_colour(
             Colours.END.value, b))
-        button.grid(row=0, column=2, padx=5, pady=5)
+        button.grid(row=0, column=2, padx=5, pady=(15, 2.5))
 
         button = tk.Button(
-            self.__buttons, text=BUTTON_CLEAR,
-            wraplength=80, height=2, width=15, bg=BUTTON_BG_COLOUR)
+            self.__buttons, text=BUTTON_TEXT_CLEAR,
+            wraplength=80, height=2, width=15, bg=BUTTON_BG_CLEAR)
         button.configure(command=lambda: self.__clear_canvas())
-        button.grid(row=0, column=3, padx=5, pady=5)
+        button.grid(row=0, column=3, padx=5, pady=(15, 2.5))
 
         button = tk.Button(
-            self.__buttons, text=BUTTON_START_ALGORITHM,
-            height=2, bg=BUTTON_BG_COLOUR)
+            self.__buttons, text=BUTTON_TEXT_START_ALGORITHM,
+            height=2, bg=BUTTON_BG_START_ALGORITHM)
         button.configure(command=lambda: self.__find_shortest_path())
         button.grid(row=1, column=0, columnspan=4, sticky=tk.W+tk.E,
-                    padx=5, pady=(0, 5))
+                    padx=5, pady=(2.5, 5))
 
         self.__buttons.pack()
 
@@ -229,7 +235,7 @@ class Window:
             # from the screen.
             for widget in self.__buttons.winfo_children():
                 if widget.winfo_class().upper() == "BUTTON":
-                    if widget.config("text")[-1] != BUTTON_CLEAR:
+                    if widget.config("text")[-1] != BUTTON_TEXT_CLEAR:
                         widget.config(state=tk.NORMAL)
 
             return
@@ -267,7 +273,7 @@ class Window:
             # user to clear the path before making modifications to the grid.
             for widget in self.__buttons.winfo_children():
                 if widget.winfo_class().upper() == "BUTTON":
-                    if widget.config("text")[-1] != BUTTON_CLEAR:
+                    if widget.config("text")[-1] != BUTTON_TEXT_CLEAR:
                         widget.config(state=tk.DISABLED)
 
     def draw_cell(self, cell_id: Cell_ID, colour: str,
