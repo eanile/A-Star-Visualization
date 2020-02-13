@@ -120,7 +120,7 @@ class Window:
             wraplength=80, height=2, width=15, bg=BUTTON_BG_PLACE_OBSTACLES)
         button.configure(command=lambda b=button: self.__change_cell_colour(
             Colours.OBSTACLE.value, b))
-        button.grid(row=0, column=0, padx=5, pady=(15, 2.5))
+        button.grid(row=0, column=0, padx=5, pady=(10, 2.5))
 
         # "Place Obstacles" button should be focused by default.
         button.focus()
@@ -130,27 +130,27 @@ class Window:
             wraplength=80, height=2, width=15, bg=BUTTON_BG_PLACE_START)
         button.configure(command=lambda b=button: self.__change_cell_colour(
             Colours.START.value, b))
-        button.grid(row=0, column=1, padx=5, pady=(15, 2.5))
+        button.grid(row=0, column=1, padx=5, pady=(10, 2.5))
 
         button = tk.Button(
             self.__buttons, text=BUTTON_TEXT_PLACE_END,
             wraplength=80, height=2, width=15, bg=BUTTON_BG_PLACE_END)
         button.configure(command=lambda b=button: self.__change_cell_colour(
             Colours.END.value, b))
-        button.grid(row=0, column=2, padx=5, pady=(15, 2.5))
+        button.grid(row=0, column=2, padx=5, pady=(10, 2.5))
 
         button = tk.Button(
             self.__buttons, text=BUTTON_TEXT_CLEAR,
             wraplength=80, height=2, width=15, bg=BUTTON_BG_CLEAR)
         button.configure(command=lambda: self.__clear_canvas())
-        button.grid(row=0, column=3, padx=5, pady=(15, 2.5))
+        button.grid(row=0, column=3, padx=5, pady=(10, 2.5))
 
         button = tk.Button(
             self.__buttons, text=BUTTON_TEXT_START_ALGORITHM,
             height=2, bg=BUTTON_BG_START_ALGORITHM)
         button.configure(command=lambda: self.__find_shortest_path())
         button.grid(row=1, column=0, columnspan=4, sticky=tk.W+tk.E,
-                    padx=5, pady=(2.5, 5))
+                    padx=5, pady=(2.5, 10))
 
         self.__buttons.pack()
 
