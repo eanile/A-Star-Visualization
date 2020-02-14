@@ -83,6 +83,7 @@ class Window:
 
         # Initialize window sections that interactive elements will live.
         self.__root = tk.Tk()
+        self.__root.title("A* Pathfinding Visualization")
         self.__canvas = tk.Canvas(
             self.__root, width=width+1, height=height+1, borderwidth=0,
             highlightthickness=0, bg=CANVAS_BG_COLOUR)
