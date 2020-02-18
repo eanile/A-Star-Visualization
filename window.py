@@ -1,8 +1,9 @@
 import tkinter as tk
 import tkinter.messagebox as messagebox
 
-from enum import Enum
 from cell import Cell
+from enum import Enum
+from idlelib import tooltip
 from typing import Dict, List, Optional, Tuple
 
 # Type definitions.
@@ -87,11 +88,11 @@ class Window:
         self.__canvas = tk.Canvas(
             self.__root, width=width+1, height=height+1, borderwidth=0,
             highlightthickness=0, bg=CANVAS_BG_COLOUR)
-        self.__buttons = tk.Frame(
+        self.__controls = tk.Frame(
             self.__root, bg=FRAME_BG_COLOUR)
 
         self.__create_canvas()
-        self.__create_buttons()
+        self.__create_controls()
 
     def __create_canvas(self) -> None:
         """ Draw the grid and register callback functions for when a user
@@ -112,12 +113,12 @@ class Window:
         self.__canvas.bind('<B3-Motion>', self.__erase_callback)
         self.__canvas.bind('<Button-3>', self.__erase_callback)
 
-    def __create_buttons(self) -> None:
-        """ Draw the buttons and register callback functions for when a user
-        clicks each button.
+    def __create_controls(self) -> None:
+        """ Draw the buttons/tooltips and register callback functions for when
+        a user clicks each button.
         """
         button = tk.Button(
-            self.__buttons, text=BUTTON_TEXT_PLACE_OBSTACLES,
+            self.__controls, text=BUTTON_TEXT_PLACE_OBSTACLES,
             wraplength=80, height=2, width=15, bg=BUTTON_BG_PLACE_OBSTACLES)
         button.configure(command=lambda b=button: self.__change_cell_colour(
             Colours.OBSTACLE.value, b))
@@ -127,33 +128,43 @@ class Window:
         button.focus()
 
         button = tk.Button(
-            self.__buttons, text=BUTTON_TEXT_PLACE_START,
+            self.__controls, text=BUTTON_TEXT_PLACE_START,
             wraplength=80, height=2, width=15, bg=BUTTON_BG_PLACE_START)
         button.configure(command=lambda b=button: self.__change_cell_colour(
             Colours.START.value, b))
         button.grid(row=0, column=1, padx=5, pady=(10, 2.5))
 
         button = tk.Button(
-            self.__buttons, text=BUTTON_TEXT_PLACE_END,
+            self.__controls, text=BUTTON_TEXT_PLACE_END,
             wraplength=80, height=2, width=15, bg=BUTTON_BG_PLACE_END)
         button.configure(command=lambda b=button: self.__change_cell_colour(
             Colours.END.value, b))
         button.grid(row=0, column=2, padx=5, pady=(10, 2.5))
 
         button = tk.Button(
-            self.__buttons, text=BUTTON_TEXT_CLEAR,
+            self.__controls, text=BUTTON_TEXT_CLEAR,
             wraplength=80, height=2, width=15, bg=BUTTON_BG_CLEAR)
         button.configure(command=lambda: self.__clear_canvas())
         button.grid(row=0, column=3, padx=5, pady=(10, 2.5))
 
         button = tk.Button(
-            self.__buttons, text=BUTTON_TEXT_START_ALGORITHM,
+            self.__controls, text=BUTTON_TEXT_START_ALGORITHM,
             height=2, bg=BUTTON_BG_START_ALGORITHM)
         button.configure(command=lambda: self.__find_shortest_path())
         button.grid(row=1, column=0, columnspan=4, sticky=tk.W+tk.E,
-                    padx=5, pady=(2.5, 10))
+                    padx=5, pady=(2.5, 2.5))
 
-        self.__buttons.pack()
+        # Create a label in the buttom right corner of the screen that, when
+        # hovered over, displays information about how to use the program.
+        tooltip_label = tk.Label(self.__controls, text="?", bg=FRAME_BG_COLOUR)
+        tooltip_label.grid(row=2, column=3, padx=5, pady=(0, 2.5), sticky=tk.E)
+        tooltip.Hovertip(tooltip_label, hover_delay=100,
+                         text=('Left-Click is used to select buttons and draw'
+                               ' squares on the grid.\n'
+                               'Right-Click is used to erase squares from the'
+                               ' grid.'))
+
+        self.__controls.pack()
 
     @property
     def root(self) -> tk.Tk:
@@ -234,7 +245,7 @@ class Window:
 
             # Re-enable non-clear buttons after the path has been cleared
             # from the screen.
-            for widget in self.__buttons.winfo_children():
+            for widget in self.__controls.winfo_children():
                 if widget.winfo_class().upper() == "BUTTON":
                     if widget.config("text")[-1] != BUTTON_TEXT_CLEAR:
                         widget.config(state=tk.NORMAL)
@@ -272,7 +283,7 @@ class Window:
 
             # Disable every button except for the clear button to force the
             # user to clear the path before making modifications to the grid.
-            for widget in self.__buttons.winfo_children():
+            for widget in self.__controls.winfo_children():
                 if widget.winfo_class().upper() == "BUTTON":
                     if widget.config("text")[-1] != BUTTON_TEXT_CLEAR:
                         widget.config(state=tk.DISABLED)
