@@ -203,7 +203,7 @@ class Window:
         # area outside the grid, or the user is drawing a start/end cell when
         # a start/end cell already exists.
         if self.cell_exists(cell_id) or \
-           self.out_of_bounds(self.cell_id_to_cell(cell_id)) or \
+           self.out_of_bounds(self.abs_to_cell((event.x, event.y))) or \
            (self.__end is not None and self.__colour == Colours.END.value) or \
            (self.__start is not None and self.__colour == Colours.START.value):
             return
@@ -322,7 +322,12 @@ class Window:
         return top_left, bottom_right
 
     def cell_to_cell_id(self, cell_coords: Coordinate) -> Cell_ID:
-        """ Convert's a cell's position on the grid to its cell ID. """
+        """ Convert's a cell's position on the grid to its cell ID.
+        Note: this function may return an unexpected Cell ID depending on the
+        length and width of the grid. For example, if the grid is 20x20, (5,1)
+        and (25,0) have the same Cell ID: 25. It is up to the caller of this
+        function to determine whether the Cell ID makes sense (for example, by
+        checking if the coordinate is in bounds."""
         cell_id = cell_coords[0] + \
             (cell_coords[1] * self.width // self.cell_width)
 
