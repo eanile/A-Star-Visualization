@@ -281,12 +281,12 @@ class Window:
         for cell_id in path[1:-1]:
             self.draw_cell(cell_id, Colours.PATH.value, self.__shortest_path)
 
-            # Disable every button except for the clear button to force the
-            # user to clear the path before making modifications to the grid.
-            for widget in self.__controls.winfo_children():
-                if widget.winfo_class().upper() == "BUTTON":
-                    if widget.config("text")[-1] != BUTTON_TEXT_CLEAR:
-                        widget.config(state=tk.DISABLED)
+        # Disable every button except for the clear button to force the
+        # user to clear the path before making modifications to the grid.
+        for widget in self.__controls.winfo_children():
+            if widget.winfo_class().upper() == "BUTTON":
+                if widget.config("text")[-1] != BUTTON_TEXT_CLEAR:
+                    widget.config(state=tk.DISABLED)
 
     def draw_cell(self, cell_id: Cell_ID, colour: str,
                   cells_dict: Dict[Cell_ID, Cell]) -> None:
