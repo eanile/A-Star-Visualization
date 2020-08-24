@@ -11,18 +11,15 @@ ADJACENT_COST = 1
 
 
 class Node:
-    """ Holds important information about a Cell when calculating the shortest
-    path.
+    """ Holds important information about a Cell when calculating the shortest path.
 
     Instance Variables:
-        came_from: Contains the Cell ID that came before the current cell on
-            the path. Used to construct the path when the algorithm is
-            complete.
+        came_from: Contains the Cell ID that came before the current cell on the path. Used to construct the path when
+            the algorithm is complete.
         visited: Flag to keep track of if the node was checked.
         g_score: Exact time to get from the start to the current node
-        f_score: Value to minimize; g_score + h_score is the estimated cost of
-            the path from start to finish (h_score is a heuristic estimate of
-            the time to get from the current node to the end).
+        f_score: Value to minimize; g_score + h_score is the estimated cost of the path from start to finish (h_score
+            is a heuristic estimate of the time to get from the current node to the end).
     """
     visited: bool
     came_from: Optional[Cell_ID]
@@ -30,9 +27,8 @@ class Node:
     f_score: float
 
     def __init__(self) -> None:
-        """ Initialize default node values. g_score must be set to infinity so
-            any g_score from a cell to a newly discovered neighbour will be
-            smaller than the default g_score of the neighbour.
+        """ Initialize default node values. g_score must be set to infinity so any g_score from a cell to a newly
+            discovered neighbour will be smaller than the default g_score of the neighbour.
         """
         self.came_from = None
         self.g_score = math.inf
@@ -68,8 +64,7 @@ def a_star(window: window.Window) -> List[Cell_ID]:
     assert start is not None
     assert end is not None
 
-    # List of all cells to easily retrieve information from.
-    # Heap will store the cell ID along with it's f_score.
+    # List of all cells to easily retrieve information from. Heap will store the cell ID along with it's f_score.
     cells = [Node() for _ in range(window.get_num_cells())]
     heap = Heap()
 
@@ -79,9 +74,9 @@ def a_star(window: window.Window) -> List[Cell_ID]:
     heap.push((cells[start].f_score, start))
 
     while not heap.empty():
-        # Get cell with the lowest f_score. Keep popping until either the heap
-        # is empty or we find an up to date node (we can insert the same node
-        # multiple times but with different/outdated f_scores).
+        # Get cell with the lowest f_score. Keep popping until either the heap is empty or we find an up to date node
+        # (we can insert the same node multiple times but with different f_scores, so a node in the heap may have an
+        # outdated f_score).
         while True:
             top = heap.pop()
             current_id = top[1]
@@ -99,14 +94,12 @@ def a_star(window: window.Window) -> List[Cell_ID]:
             if cells[neighbour_id].visited:
                 continue
 
-            # Update neighbour's information if a better path is found and add
-            # to the heap.
+            # Update neighbour's information if a better path is found and add to the heap.
             new_g_score = cells[current_id].g_score + ADJACENT_COST
             if new_g_score < cells[neighbour_id].g_score:
                 cells[neighbour_id].came_from = current_id
                 cells[neighbour_id].g_score = new_g_score
-                cells[neighbour_id].f_score = new_g_score + \
-                    h_score(window, neighbour_id, end)
+                cells[neighbour_id].f_score = new_g_score + h_score(window, neighbour_id, end)
 
                 heap.push((cells[neighbour_id].f_score, neighbour_id))
 
@@ -121,8 +114,7 @@ def h_score(window: window.Window, cell1: Cell_ID, cell2: Cell_ID) -> float:
     return math.sqrt(sum([(a - b) ** 2 for a, b in zip(c1_coords, c2_coords)]))
 
 
-def construct_path(start: Cell_ID, end: Cell_ID,
-                   cells: List[Node]) -> List[Cell_ID]:
+def construct_path(start: Cell_ID, end: Cell_ID, cells: List[Node]) -> List[Cell_ID]:
     """ Construct the shortest path taken from start to end. """
     if start == end:
         return []
@@ -132,8 +124,11 @@ def construct_path(start: Cell_ID, end: Cell_ID,
     # Create the path by working backwards.
     current = end
     while current is not start:
-        path.append(cells[current].came_from)
-        current = cells[current].came_from
+        came_from = cells[current].came_from
+        assert came_from is not None
+
+        path.append(came_from)
+        current = came_from
 
     path.reverse()
     return path
