@@ -1,5 +1,4 @@
 __pycache__
 .mypy_cache
-setup.cfg
 .vscode/
 venv/
